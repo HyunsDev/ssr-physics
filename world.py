@@ -6,21 +6,25 @@ from sympy import Symbol, solve
 
 # 월드 클래스
 class VirtualWorld:
-    def __init__(self, measuring_time:int=10, interval=100, debug=False):
-        '''
-        가상 세계를 설정합니다.
+    '''
+    가상 세계를 설정합니다.
 
-        Args:
-            measuring_time : 측정 시간
-            interval : 시간 정확도 (1/interval초 마다 측정합니다.)
-            debug : 디버그 정보 출력 여부
-        '''
+    Args:
+        measuring_time : 측정 시간
+        interval : 시간 정확도 (1/interval초 마다 측정합니다.)
+        debug : 디버그 정보 출력 여부
+    '''
 
+    def __init__(self, measuring_time:int=10, interval:int=100, debug=False):
         self.measuring_time = measuring_time
+        interval_temp = interval**(1/2)
+        if interval != 10 and (interval_temp != int(interval_temp)):
+            print("시간 정확도는 10의 배수여야 합니다.")
+            raise ValueError
+            return None
         self.interval = interval
         self.debug = debug
         self.start_time = time.time()
-
         self.objs = {}
         self.events = []
 
@@ -198,14 +202,10 @@ class VirtualWorld:
             plt.plot(arange, time_result["p"][objName], label=objName)
         plt.legend()
             
-
-        # plt.plot(, test_res_pos)
         plt.show()
-
-        
-
+    
 if __name__ == '__main__':
-    world = VirtualWorld(15, 60, debug=True)
+    world = VirtualWorld(10, 10, debug=True)
     world.add_square('one', 0, 1)
     world.event_force_object("one", 5, [1,8])
     world.add_square('two', 0, 2)
