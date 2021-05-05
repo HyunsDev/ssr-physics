@@ -203,7 +203,8 @@ class VirtualWorld:
         plt.legend()
             
         plt.show()
-    
+
+# 테스트 코드
 if __name__ == '__main__':
     world = VirtualWorld(10, 10, debug=True)
     world.add_square('one', 0, 1)
