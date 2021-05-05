@@ -2,9 +2,7 @@ from abc import *
 from fractions import Fraction
 import matplotlib.pyplot as plt
 import copy, os, datetime, time, numpy
-# from sympy import Symbol, solve
-# 에러 클래스
-
+from sympy import Symbol, solve
 
 # 월드 클래스
 class VirtualWorld:
