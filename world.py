@@ -164,7 +164,9 @@ class VirtualWorld:
                 obj['pos'] += obj['v'] / self.interval
 
         if self.debug:
+            log.write(f"소모 시간 : {time.time() - self.start_time}s\n")
             print(f"소모 시간 : {time.time() - self.start_time}s")
+            log.close()
 
         # 그래프
         arange = numpy.arange(0, self.measuring_time + (1/self.interval), 1/self.interval)
@@ -206,7 +208,7 @@ class VirtualWorld:
             plt.plot(arange, time_result["p"][objName], label=objName)
         plt.legend()
 
-        log.close()
+        
             
         plt.show()
 
