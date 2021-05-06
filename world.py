@@ -47,30 +47,30 @@ class VirtualWorld:
             "m" : m,
             "v" : v,
             "Ek" : (1/2) * m * (v ** 2),
-            "p" : 0,
+            "p" : m*v,
             "before_pos": 0
         }
         return self.objs[name]
 
-    def add_wall(self, name:str, pos:int) -> dict:
-        '''
-        가상의 물체인 벽을 세계에 추가합니다.
-        벽은 해당 위치에 고정되어 움직이지 않습니다.
+    # def add_wall(self, name:str, pos:int) -> dict:
+    #     '''
+    #     가상의 물체인 벽을 세계에 추가합니다.
+    #     벽은 해당 위치에 고정되어 움직이지 않습니다.
 
-        Args:
-            name: 물체의 고유 이름
-            pos: 물체의 위치
+    #     Args:
+    #         name: 물체의 고유 이름
+    #         pos: 물체의 위치
 
-        Returns:
-            생성한 물체의 개체(pos, type)
-        '''
+    #     Returns:
+    #         생성한 물체의 개체(pos, type)
+    #     '''
 
-        self.objs[name] = {
-            "pos" : pos,
-            "type" : "wall"
-        }
+    #     self.objs[name] = {
+    #         "pos" : pos,
+    #         "type" : "wall"
+    #     }
         
-    def event_force_object(self, name, F, time:list):
+    def event_force_object(self, name:str, F:int, time:list) -> dict:
         '''
         물체에 지정한 힘을 주어진 시간동안 가합니다.
 
@@ -78,13 +78,18 @@ class VirtualWorld:
             name: 힘을 가할 물체
             F: 힘 (N)
             time: 힘을 가하는 시간 ([시작 시간, 끝 시간])
-        '''
 
-        self.events.append({
+        Returns:
+            생성한 이벤트의 객체 (objName, F, time)
+        '''
+        event = {
             'objName' : name,
             'F' : F,
             'time' : time
-        })
+        }
+
+        self.events.append(event)
+        return event
 
     def start(self):
         '''
@@ -209,6 +214,4 @@ if __name__ == '__main__':
     world = VirtualWorld(10, 10, debug=True)
     world.add_square('one', 0, 1)
     world.event_force_object("one", 5, [1,8])
-    world.add_square('two', 0, 2)
-    world.event_force_object("two", 20, [4,8])
     world.start()
