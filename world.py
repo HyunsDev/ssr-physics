@@ -15,15 +15,7 @@ class VirtualWorld:
         debug : 디버그 정보 출력 여부
     '''
 
-    def __init__(self, measuring_time:int=10, interval:int=100, debug=False):
-        self.measuring_time = measuring_time
-        interval_temp = interval**(1/2)
-        if interval != 10 and (interval_temp != int(interval_temp)):
-            print("시간 정확도는 10의 배수여야 합니다.")
-            raise ValueError
-            return None
-        self.interval = interval
-        self.debug = debug
+    def __init__(self):
         self.start_time = time.time()
         self.objs = {}
         self.events = []
@@ -52,23 +44,23 @@ class VirtualWorld:
         }
         return self.objs[name]
 
-    # def add_wall(self, name:str, pos:int) -> dict:
-    #     '''
-    #     가상의 물체인 벽을 세계에 추가합니다.
-    #     벽은 해당 위치에 고정되어 움직이지 않습니다.
+    def add_wall(self, name:str, pos:int) -> dict:
+        '''
+        가상의 물체인 벽을 세계에 추가합니다.
+        벽은 해당 위치에 고정되어 움직이지 않습니다.
 
-    #     Args:
-    #         name: 물체의 고유 이름
-    #         pos: 물체의 위치
+        Args:
+            name: 물체의 고유 이름
+            pos: 물체의 위치
 
-    #     Returns:
-    #         생성한 물체의 개체(pos, type)
-    #     '''
+        Returns:
+            생성한 물체의 개체(pos, type)
+        '''
 
-    #     self.objs[name] = {
-    #         "pos" : pos,
-    #         "type" : "wall"
-    #     }
+        self.objs[name] = {
+            "pos" : pos,
+            "type" : "wall"
+        }
         
     def event_force_object(self, name:str, F:int, time:list) -> dict:
         '''
@@ -91,11 +83,19 @@ class VirtualWorld:
         self.events.append(event)
         return event
 
-    def start(self):
+    def start(self, measuring_time:int=10, interval:int=100, debug=False):
         '''
         실험을 시작합니다. 생성된 물체와 추가된 이벤트를 진행시킵니다.
         실험이 끝나면 실험 결과를 그래프로 띄웁니다.
         '''
+        self.measuring_time = measuring_time
+        interval_temp = interval**(1/2)
+        if interval != 10 and (interval_temp != int(interval_temp)):
+            print("시간 정확도는 10의 배수여야 합니다.")
+            raise ValueError
+            return None
+        self.interval = interval
+        self.debug = debug
         obj_result = {}
         objs = self.objs
         events = self.events
@@ -108,8 +108,7 @@ class VirtualWorld:
                 time_result[graphType][objName] = []
 
         if self.debug:
-            print(f"작업 시작 : {self.start_time}")
-                
+            log = open('debug.txt', 'w', encoding='utf-8')
 
         # 메인 루프
         for i in range(0, (self.measuring_time*self.interval)+1):
@@ -118,18 +117,18 @@ class VirtualWorld:
                 # os.system('cls')
                 for objName in objs.keys():
                     now_time = f'{i // self.interval}초 {i % self.interval}/{self.interval}'
+                    log.write(f"[{i}/{self.measuring_time*self.interval+1}] ")
                     print(f'[{i}/{self.measuring_time*self.interval+1}]', end=" ")
-                    print(f'{now_time} 초', end=" ")
+                    log.write(f'{now_time} ')
+                    print(f'{now_time}', end=" ")
+                    log.write(f"pos:{objs[objName]['pos']}m, v:{objs[objName]['v']}m/s, Ek:{objs[objName]['Ek']}, p:{objs[objName]['p']}N\n")
                     print(f"pos:{objs[objName]['pos']}m, v:{objs[objName]['v']}m/s, Ek:{objs[objName]['Ek']}, p:{objs[objName]['p']}N")
             
             #기록 
             obj_result[i] = {}
 
             for objName in objs.keys():
-                # print(objs)
                 obj = objs[objName]
-                # print('{0:.5f}'.format(objs[objName]['v']))
-                # print(obj['v'])
                 try:
                     obj_result[i][objName].append({
                         'pos' : obj['pos'],
@@ -206,12 +205,15 @@ class VirtualWorld:
         for objName in objs:
             plt.plot(arange, time_result["p"][objName], label=objName)
         plt.legend()
+
+        log.close()
             
         plt.show()
 
 # 테스트 코드
 if __name__ == '__main__':
-    world = VirtualWorld(10, 10, debug=True)
+    world = VirtualWorld()
     world.add_square('one', 0, 1)
-    world.event_force_object("one", 5, [1,8])
-    world.start()
+    world.event_force_object("one", 3, [1,5])
+    world.event_force_object("one", -6, [7,9])
+    world.start(14, 100, debug=True)
