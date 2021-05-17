@@ -1,24 +1,31 @@
 from abc import *
-from fractions import Fraction
 import matplotlib.pyplot as plt
-import copy, os, datetime, time, numpy
-from sympy import Symbol, solve
+from matplotlib.animation import FuncAnimation
+import time, numpy
 
 # 월드 클래스
 class VirtualWorld:
     '''
     가상 세계를 설정합니다.
-
-    Args:
-        measuring_time : 측정 시간
-        interval : 시간 정확도 (1/interval초 마다 측정합니다.)
-        debug : 디버그 정보 출력 여부
     '''
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_time = time.time()
         self.objs = {}
         self.events = []
+        self.show_object_name = ""
+        self.min, self.max = 0,0
+    
+    def show_object(self, name:str) -> None:
+        '''
+        계산이 끝난 후 해당 정사각형의 움직임을 화면에 표시하고 ssr-physics.gif에 저장합니다.
+        시간이 많이 소모 됩니다.
+
+        Args:
+            name: 물체의 고유 이름
+
+        '''
+        self.show_object_name = name
 
     def add_square(self, name:str, pos:int, m:int=1, v:int=0) -> dict:
         '''
@@ -83,17 +90,21 @@ class VirtualWorld:
         self.events.append(event)
         return event
 
-    def start(self, measuring_time:int=10, interval:int=100, debug=False):
+    def start(self, measuring_time:int=10, interval:int=100, debug=False) -> None:
         '''
         실험을 시작합니다. 생성된 물체와 추가된 이벤트를 진행시킵니다.
         실험이 끝나면 실험 결과를 그래프로 띄웁니다.
+
+        measuring_time : 측정 시간
+        interval : 시간 정확도 (1/interval초 마다 측정합니다.)
+        debug : 디버그 정보 출력 여부
         '''
         self.measuring_time = measuring_time
         interval_temp = interval**(1/2)
         if interval != 10 and (interval_temp != int(interval_temp)):
             print("시간 정확도는 10의 배수여야 합니다.")
             raise ValueError
-            return None
+
         self.interval = interval
         self.debug = debug
         obj_result = {}
@@ -162,13 +173,29 @@ class VirtualWorld:
                 obj = objs[objName]
                 obj['before_pos'] = obj['pos']
                 obj['pos'] += obj['v'] / self.interval
+                if obj['pos'] < self.min: self.min = obj['pos']
+                if obj['pos'] > self.max: self.max = obj['pos']
 
         if self.debug:
             log.write(f"소모 시간 : {time.time() - self.start_time}s\n")
             print(f"소모 시간 : {time.time() - self.start_time}s")
             log.close()
 
-        print(time_result["pos"])
+        if self.show_object_name:
+            fig, ax = plt.subplots()
+            ax.set_xlim(self.min, self.max)
+            ax.set_ylim(-1, 1)
+            line, = plt.plot([], [], 'bo')
+
+            def update(frame):
+                line.set_data(time_result["pos"][self.show_object_name][frame], 0)
+                return line,
+
+            ani = FuncAnimation(fig, update, frames=range(0, (self.measuring_time*self.interval)+1), interval=(1/(self.interval*100)))
+            print('GIF 파일 작성 중...')
+            ani.save('ssr-physics.gif', writer='imagemagick', fps=60, dpi=100)
+            print('GIF 파일 작성 완료')
+            plt.show()
 
         # 그래프
         arange = numpy.arange(0, self.measuring_time + (1/self.interval), 1/self.interval)
@@ -216,5 +243,14 @@ class VirtualWorld:
 if __name__ == '__main__':
     world = VirtualWorld()
     world.add_square('one', 0, 1)
-    world.event_force_object("one", 3, [1,3])
-    world.start(9, 100, debug=True)
+    world.event_force_object("one", 10, [0,1])
+    world.event_force_object("one", -20, [1,2])
+    world.show_object('one')
+    world.start(5, 100, debug=True)
+
+    # world.add_square('one', 1, 1)
+    # world.event_force_object("one", -1, [0,1])
+    # world.event_force_object("one", 1, [1,3])
+    # world.event_force_object("one", -1, [3,5])
+    # world.show_object('one')
+    # world.start(5, 100, debug=True)
